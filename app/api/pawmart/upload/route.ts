@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
     const name = (formData.get('name') as string) || 'product'
+    console.log('Upload called, file:', file?.name, 'size:', file?.size)  
 
     if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
     if (!file.type.startsWith('image/')) return NextResponse.json({ error: 'Not an image' }, { status: 400 })
