@@ -10,6 +10,8 @@ cloudinary.config({
 function slugify(name: string) {
   return name
     .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
@@ -19,7 +21,8 @@ export async function POST(req: Request) {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
     const name = (formData.get('name') as string) || 'product'
-    console.log('Upload called, file:', file?.name, 'size:', file?.size)  
+
+    console.log('Upload called:', file?.name, 'size:', file?.size)
 
     if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
     if (!file.type.startsWith('image/')) return NextResponse.json({ error: 'Not an image' }, { status: 400 })
@@ -35,6 +38,7 @@ export async function POST(req: Request) {
       overwrite: true,
     })
 
+    console.log('Cloudinary success:', result.secure_url)
     return NextResponse.json({ path: result.secure_url })
 
   } catch (err) {
