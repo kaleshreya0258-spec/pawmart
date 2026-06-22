@@ -15,22 +15,40 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState<Partial<Product>>({})
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [imageError, setImageError] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const filtered = items.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.category.toLowerCase().includes(search.toLowerCase())
   )
 
+  const revokePreview = () => {
+    if (imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview)
+  }
+
   const openAdd = () => {
     setForm({ category: 'Dogs', featured: false, stock: 0, price: 0 })
     setModal('add')
     setImageError('')
+    revokePreview()
+    setImageFile(null)
+    setImagePreview('')
   }
-  const openEdit = (p: Product) => { setForm({ ...p }); setModal(p); setImageError('') }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const openEdit = (p: Product) => {
+    setForm({ ...p })
+    setModal(p)
+    setImageError('')
+    revokePreview()
+    setImageFile(null)
+    setImagePreview(p.image || '')
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    e.target.value = '' // allow re-selecting the same file later
+    e.target.value = ''
     if (!file) return
     if (!file.type.startsWith('image/')) {
       setImageError('Please choose an image file (PNG, JPG, etc.)')
@@ -41,12 +59,41 @@ export default function AdminProductsPage() {
       return
     }
     setImageError('')
-    const reader = new FileReader()
-    reader.onload = () => setForm(f => ({ ...f, image: reader.result as string }))
-    reader.readAsDataURL(file)
+    revokePreview()
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
   }
 
-  const saveProduct = () => {
+  const removeImage = () => {
+    revokePreview()
+    setImageFile(null)
+    setImagePreview('')
+  }
+
+  const saveProduct = async () => {
+    setSaving(true)
+    let imagePath = imagePreview && !imagePreview.startsWith('blob:') ? imagePreview : ''
+
+    if (imageFile) {
+      try {
+        const fd = new FormData()
+        fd.append('file', imageFile)
+        fd.append('name', form.name || 'product')
+        const res = await fetch('/api/upload', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Upload failed')
+        imagePath = data.path
+        console.log('Image uploaded to:', imagePath)
+      } catch (err) {
+        console.error('Failed to upload image:', err)
+        setImageError('Image upload failed — please try again.')
+        setSaving(false)
+        return
+      }
+    }
+
+    const image = imagePath || `https://placehold.co/400x300/f97316/fff?text=${encodeURIComponent(form.name || 'Product')}`
+
     if (modal === 'add') {
       const newP: Product = {
         id: `p${Date.now()}`,
@@ -54,15 +101,23 @@ export default function AdminProductsPage() {
         category: form.category as Product['category'] || 'Dogs',
         price: Number(form.price) || 0,
         stock: Number(form.stock) || 0,
-        image: form.image || `https://placehold.co/400x300/f97316/fff?text=${encodeURIComponent(form.name || 'Product')}`,
+        image,
         description: form.description || '',
         featured: form.featured || false,
         rating: 0, reviews: 0,
       }
-      addProduct(newP)
+      await addProduct(newP)
     } else {
-      updateProduct({ ...(modal as Product), ...form } as Product)
+      await updateProduct({ ...(modal as Product), ...form, image } as Product)
     }
+    setSaving(false)
+    setModal(null)
+  }
+
+  const closeModal = () => {
+    revokePreview()
+    setImageFile(null)
+    setImagePreview('')
     setModal(null)
   }
 
@@ -73,7 +128,6 @@ export default function AdminProductsPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* Desktop header */}
       <PageHeader
         title="Products"
         subtitle={`${items.length} products total`}
@@ -84,15 +138,9 @@ export default function AdminProductsPage() {
         }
       />
 
-      {/* Mobile header */}
       <div className="lg:hidden flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all"
-            aria-label="Go back"
-          >
+          <button type="button" onClick={() => router.back()} className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all" aria-label="Go back">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
@@ -105,7 +153,6 @@ export default function AdminProductsPage() {
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative mb-4 md:mb-6 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input className="input pl-9" placeholder="Search products…" value={search} onChange={e => setSearch(e.target.value)} />
@@ -210,7 +257,7 @@ export default function AdminProductsPage() {
           <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white z-10">
               <h2 className="font-bold text-gray-900">{modal === 'add' ? 'Add New Product' : 'Edit Product'}</h2>
-              <button onClick={() => setModal(null)} title="Close" aria-label="Close" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+              <button onClick={closeModal} title="Close" aria-label="Close" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
@@ -223,25 +270,27 @@ export default function AdminProductsPage() {
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Product Image</label>
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-xl bg-orange-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 text-3xl">
-                    {form.image
-                      ? <img src={form.image} alt="Product preview" className="w-full h-full object-cover" />
+                    {imagePreview
+                      ? <img src={imagePreview} alt="Product preview" className="w-full h-full object-cover" />
                       : <ImageIcon className="w-6 h-6 text-gray-300" />}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
                       <label className="btn-secondary text-xs py-2 px-3 cursor-pointer">
-                        <Upload className="w-3.5 h-3.5" /> {form.image ? 'Change Image' : 'Upload Image'}
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        <Upload className="w-3.5 h-3.5" /> {imagePreview ? 'Change Image' : 'Upload Image'}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                       </label>
-                      {form.image && (
-                        <button type="button" onClick={() => setForm(f => ({ ...f, image: '' }))} className="text-xs font-semibold text-red-500 hover:underline">
+                      {imagePreview && (
+                        <button type="button" onClick={removeImage} className="text-xs font-semibold text-red-500 hover:underline">
                           Remove
                         </button>
                       )}
                     </div>
                     {imageError
                       ? <p className="text-[11px] text-red-500 mt-1.5">{imageError}</p>
-                      : <p className="text-[11px] text-gray-400 mt-1.5">PNG or JPG, up to 2MB. Leave empty to use a placeholder.</p>}
+                      : imageFile
+                        ? <p className="text-[11px] text-orange-500 mt-1.5">Image selected — will upload to Cloudinary on Save.</p>
+                        : <p className="text-[11px] text-gray-400 mt-1.5">PNG or JPG, up to 2MB.</p>}
                   </div>
                 </div>
               </div>
@@ -271,9 +320,9 @@ export default function AdminProductsPage() {
               </label>
             </div>
             <div className="flex gap-3 p-5 border-t border-gray-100 sticky bottom-0 bg-white">
-              <button onClick={() => setModal(null)} className="btn-secondary flex-1 justify-center">Cancel</button>
-              <button onClick={saveProduct} className="btn-primary flex-1 justify-center">
-                {modal === 'add' ? 'Add Product' : 'Save Changes'}
+              <button onClick={closeModal} disabled={saving} className="btn-secondary flex-1 justify-center">Cancel</button>
+              <button onClick={saveProduct} disabled={saving} className="btn-primary flex-1 justify-center">
+                {saving ? 'Saving…' : modal === 'add' ? 'Add Product' : 'Save Changes'}
               </button>
             </div>
           </div>
