@@ -43,7 +43,9 @@ export default function AdminProductsPage() {
     setImageError('')
     revokePreview()
     setImageFile(null)
-    setImagePreview(p.image || '')
+    // Only use existing image as preview if it's a real URL (not old base64)
+    const existingImage = p.image || ''
+    setImagePreview(existingImage.startsWith('data:') ? '' : existingImage)
   }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
