@@ -182,6 +182,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/pawmart/upload/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/pawmart/upload">> = Specific
+  const handler = {} as typeof import("../../app/api/pawmart/upload/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 
 
 
