@@ -102,9 +102,11 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {products.slice(0, 5).map((p, idx) => (
               <div key={p.id ?? idx} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center text-lg shrink-0">
-                  {p.category === 'Dogs' ? '🐶' : p.category === 'Cats' ? '🐱' : p.category === 'Birds' ? '🐦' : p.category === 'Fish' ? '🐟' : '🐹'}
-                </div>
+                <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center text-lg shrink-0 overflow-hidden">
+  {p.image
+    ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+    : p.category === 'Dogs' ? '🐶' : p.category === 'Cats' ? '🐱' : p.category === 'Birds' ? '🐦' : p.category === 'Fish' ? '🐟' : '🐹'}
+</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-gray-800 truncate">{p.name}</p>
                   <p className="text-xs text-gray-400">{p.stock} in stock</p>

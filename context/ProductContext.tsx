@@ -86,13 +86,11 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     }
   }, [products, refreshProducts])
 
-  if (!hydrated) return null
-
   return (
-    <ProductContext.Provider value={{ products, updateProduct, addProduct, deleteProduct, refreshProducts }}>
-      {children}
-    </ProductContext.Provider>
-  )
+  <ProductContext.Provider value={{ products, updateProduct, addProduct, deleteProduct, refreshProducts }}>
+    {hydrated ? children : null}
+  </ProductContext.Provider>
+)
 }
 
 export const useProducts = () => useContext(ProductContext)
