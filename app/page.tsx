@@ -6,12 +6,13 @@ import { useProducts } from '@/context/ProductContext'
 import { getCategoryEmoji } from '@/lib/data'
 
 const categories = [
-  { name: 'Dogs',       icon: '🐶', color: 'bg-orange-50 border-orange-200',   href: '/shop?cat=Dogs' },
-  { name: 'Cats',       icon: '🐱', color: 'bg-pink-50 border-pink-200',        href: '/shop?cat=Cats' },
-  { name: 'Birds',      icon: '🐦', color: 'bg-sky-50 border-sky-200',          href: '/shop?cat=Birds' },
-  { name: 'Fish',       icon: '🐟', color: 'bg-teal-50 border-teal-200',        href: '/shop?cat=Fish' },
-  { name: 'Small Pets', icon: '🐹', color: 'bg-yellow-50 border-yellow-200',    href: '/shop?cat=Small+Pets' },
+  { name: 'Dogs',       img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=300&fit=crop&crop=faces,center&auto=format', color: 'bg-orange-50 border-orange-200',   href: '/shop?cat=Dogs' },
+  { name: 'Cats',       img: 'https://images.unsplash.com/photo-1533743983669-94fa5c4338ec?w=400&h=300&fit=crop&crop=faces,center&auto=format', color: 'bg-pink-50 border-pink-200',        href: '/shop?cat=Cats' },
+  { name: 'Birds',      img: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400&h=300&fit=crop&crop=center&auto=format', color: 'bg-sky-50 border-sky-200',          href: '/shop?cat=Birds' },
+  { name: 'Fish',       img: 'https://images.unsplash.com/photo-1520301255226-bf5f144451c1?w=400&h=300&fit=crop&crop=center&auto=format', color: 'bg-teal-50 border-teal-200',        href: '/shop?cat=Fish' },
+  { name: 'Small Pets', img: 'https://images.unsplash.com/photo-1591382386627-349b692688ff?w=400&h=300&fit=crop&crop=faces,center&auto=format', color: 'bg-yellow-50 border-yellow-200',    href: '/shop?cat=Small+Pets' },
 ]
+
 
 export default function HomePage() {
   const { products, refreshProducts } = useProducts()
@@ -137,9 +138,17 @@ export default function HomePage() {
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           {categories.map(cat => (
             <Link key={cat.name} href={cat.href}
-              className={`${cat.color} border-2 rounded-2xl p-4 md:p-5 flex flex-col items-center gap-2 md:gap-3 hover:shadow-md transition-all group`}>
-              <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform">{cat.icon}</span>
-              <span className="text-xs md:text-sm font-semibold text-gray-700 text-center">{cat.name}</span>
+              className={`${cat.color} border-2 rounded-2xl overflow-hidden hover:shadow-md transition-all group`}>
+              <div className="h-28 md:h-36 overflow-hidden">
+                <img
+                  src={cat.img}
+                  alt={cat.name}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="py-2 md:py-3 text-center">
+                <span className="text-xs md:text-sm font-semibold text-gray-700">{cat.name}</span>
+              </div>
             </Link>
           ))}
         </div>
@@ -202,33 +211,107 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-10 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-6 text-sm">
-          <div>
-            <p className="text-white font-bold text-lg mb-1">🐾 PawMart</p>
-            <p>India's friendliest pet store.</p>
+      <footer className="bg-gray-900 text-gray-400 pt-14 pb-6 px-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 text-sm">
+
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
+            <p className="text-white font-bold text-xl mb-2">🐾 PawMart</p>
+            <p className="text-gray-400 text-sm leading-relaxed mb-4">India's friendliest pet store. Premium products for every pet, delivered to your door.</p>
+            <div className="flex gap-3 mt-2">
+              {['📘', '📸', '🐦', '▶️'].map((icon, i) => (
+                <a key={i} href="#" className="w-9 h-9 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center text-sm transition-colors">
+                  {icon}
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-8">
-            <div>
-              <p className="text-white font-semibold mb-2">Shop</p>
-              <ul className="space-y-1">
-                {['Dogs', 'Cats', 'Birds', 'Fish', 'Small Pets'].map(c => (
-                  <li key={c}><Link href={`/shop?cat=${c}`} className="hover:text-white transition-colors">{c}</Link></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-white font-semibold mb-2">Help</p>
-              <ul className="space-y-1">
-                {['Contact', 'FAQs', 'Returns', 'Track Order'].map(c => (
-                  <li key={c}><a href="#" className="hover:text-white transition-colors">{c}</a></li>
-                ))}
-              </ul>
-            </div>
+
+          {/* Shop */}
+          <div>
+            <p className="text-white font-semibold mb-4">Shop</p>
+            <ul className="space-y-2.5">
+              {[
+                { label: '🐶 Dogs',       href: '/shop?cat=Dogs' },
+                { label: '🐱 Cats',       href: '/shop?cat=Cats' },
+                { label: '🐦 Birds',      href: '/shop?cat=Birds' },
+                { label: '🐟 Fish',       href: '/shop?cat=Fish' },
+                { label: '🐹 Small Pets', href: '/shop?cat=Small+Pets' },
+              ].map(c => (
+                <li key={c.label}>
+                  <Link href={c.href} className="hover:text-white transition-colors">{c.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Help */}
+          <div>
+            <p className="text-white font-semibold mb-4">Help</p>
+            <ul className="space-y-2.5">
+              {['Contact Us', 'FAQs', 'Returns & Refunds', 'Track Order', 'Shipping Info'].map(c => (
+                <li key={c}><a href="#" className="hover:text-white transition-colors">{c}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="text-white font-semibold mb-4">Contact</p>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5">📍</span>
+                <span>42, Pet Lane, Bandra West,<br/>Mumbai – 400050</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span>📞</span>
+                <a href="tel:+918001234567" className="hover:text-white transition-colors">+91 800 123 4567</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <span>✉️</span>
+                <a href="mailto:hello@pawmart.in" className="hover:text-white transition-colors">hello@pawmart.in</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🕐</span>
+                <span>Mon–Sat, 9 AM – 7 PM</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        {/* Newsletter */}
+        <div className="max-w-7xl mx-auto mt-10 bg-gray-800 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="text-white font-semibold">🐾 Get pet care tips & exclusive offers</p>
+            <p className="text-gray-400 text-xs mt-0.5">Join 20,000+ happy pet parents. Unsubscribe anytime.</p>
+          </div>
+          <div className="flex w-full sm:w-auto gap-2">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 sm:w-64 bg-gray-700 text-white text-sm px-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-orange-400 placeholder-gray-500"
+            />
+            <button className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap">
+              Subscribe
+            </button>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto border-t border-gray-800 mt-8 pt-6 text-xs text-center">
-          © {new Date().getFullYear()} PawMart. All rights reserved.
+
+        {/* Bottom bar */}
+        <div className="max-w-7xl mx-auto border-t border-gray-800 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <p>© {new Date().getFullYear()} PawMart. All rights reserved.</p>
+          <div className="flex gap-4">
+            {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(t => (
+              <a key={t} href="#" className="hover:text-white transition-colors">{t}</a>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <span>We accept:</span>
+            {['💳', '🏦', '📱'].map((icon, i) => (
+              <span key={i} className="bg-gray-800 px-2 py-1 rounded text-xs">{icon}</span>
+            ))}
+          </div>
         </div>
       </footer>
 
