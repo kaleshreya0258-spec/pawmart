@@ -14,36 +14,26 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError('')
-    await new Promise(r => setTimeout(r, 600))
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      setLoading(true)
       document.cookie = 'pawmart_admin_session=authenticated; path=/; max-age=86400'
       router.push('/admin/dashboard')
     } else {
       setError('Incorrect email or password.')
-      setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <span className="text-5xl">🐾</span>
           <h1 className="text-2xl font-bold text-gray-900 mt-2">PawMart Admin</h1>
           <p className="text-gray-500 text-sm mt-1">Sign in to manage your store</p>
-        </div>
-
-        {/* Quick-fill hint */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 text-sm text-blue-700">
-          <p className="font-semibold mb-1">🔑 Demo credentials (pre-filled)</p>
-          <p>Email: <code className="font-mono bg-blue-100 px-1 rounded">admin@pawmart.com</code></p>
-          <p>Password: <code className="font-mono bg-blue-100 px-1 rounded">pawmart123</code></p>
         </div>
 
         <form onSubmit={handleLogin} className="card p-8 space-y-5">
@@ -67,7 +57,7 @@ export default function AdminLoginPage() {
               <input
                 id="admin-password"
                 title="Admin password"
-                placeholder="pawmart123"
+                placeholder="••••••••"
                 type={showPw ? 'text' : 'password'}
                 className="input pr-10"
                 value={password}
@@ -99,7 +89,7 @@ export default function AdminLoginPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                 </svg>
-                Signing in…
+                Redirecting…
               </span>
             ) : (
               <><LogIn className="w-4 h-4" /> Sign In</>
